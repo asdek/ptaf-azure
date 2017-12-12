@@ -176,29 +176,26 @@
           "description": "The base url for dependent assets",
           "artifactsBaseUrl": ""
         },
-        "defaultValue": "https://raw.githubusercontent.com/capgelka/ptaf-azure/azure-stack"
+        "defaultValue": "https://raw.githubusercontent.com/capgelka/ptaf-azure/release-3.6.3"
       }
     },
   "variables": {
-     "imagePublisher": "PositiveTechnologies",
-     "imageSku" : "PTAF",
-     "imageOffer" : "PTApplicationFirewall",
-     "imageVersion": "latest",
-     "publicIPAddressType": "Static",
-     "wanNetworkInterfaceName": "ptaf-ni-wan",
-     "lanNetworkInterfaceName": "ptaf-ni-lan",
-     "networkSecurityGroupName": "ptaf-nsg",
-     "deploymentName": "ptaf-deploy",
-     "dnsPrefix": "[concat(parameters('dnsLabelPrefix'), uniquestring(resourceGroup().id, deployment().name))]",
-     "singleQuote": "'",
-     "extensionCommand": "[concat('sh -c ', variables('singleQuote'), './network_settings.sh ', parameters('virtualMachineName'), ' ', parameters('license'), variables('singleQuote'))]",
-     "commandsUris": [
-       "[concat(parameters('baseUrl'), '/scripts/network_settings.sh')]",
-       "[concat(parameters('baseUrl'), '/scripts/ptaf_api_settings.py')]"
-      ],
-     "storageAccountTemplateUrl": "[concat(parameters('baseUrl'), '/ptaf-storage-account-', parameters('newOrExistingStorageAccount'),'.json')]",
-     "virtualNetworkTemplateUrl": "[concat(parameters('baseUrl'), '/ptaf-network-', parameters('newOrExistingVirtualNetwork'), '.json')]",
-     "vmTemplateUrl": "[concat(parameters('baseUrl'), '/ptaf-vm-', parameters('authenticationType'),'.json')]"
+    "imagePublisher": "ptsecurity",
+    "imageSku" : "byol",
+    "imageOffer" : "ptaf-vm-preview",
+    "imageVersion": "3.6.6",
+    "publicIPAddressType": "Static",
+    "wanNetworkInterfaceName": "ptaf-ni-wan",
+    "lanNetworkInterfaceName": "ptaf-ni-lan",
+    "networkSecurityGroupName": "ptaf-nsg",
+    "deploymentName": "ptaf-deploy",
+    "dnsPrefix": "[concat(parameters('dnsLabelPrefix'), uniquestring(resourceGroup().id, deployment().name))]",
+    "singleQuote": "'",
+    "extensionCommand": "[concat('sh -c ', variables('singleQuote'), './network_settings.sh ', parameters('virtualMachineName'), ' ', parameters('license'), variables('singleQuote'))]",
+    "commandsUris": ["[concat(parameters('baseUrl'), '/scripts/network_settings.sh')]"],
+    "storageAccountTemplateUrl": "[concat(parameters('baseUrl'), '/ptaf-storage-account-', parameters('newOrExistingStorageAccount'),'.json')]",
+    "virtualNetworkTemplateUrl": "[concat(parameters('baseUrl'), '/ptaf-network-', parameters('newOrExistingVirtualNetwork'), '.json')]",
+    "vmTemplateUrl": "[concat(parameters('baseUrl'), '/ptaf-vm-', parameters('authenticationType'),'.json')]"
   },
   "resources": [
     {
@@ -490,7 +487,7 @@
             "properties": {
                 "publisher": "Microsoft.OSTCExtensions",
                 "type": "CustomScriptForLinux",
-                "typeHandlerVersion": "1.3",
+                "typeHandlerVersion": "1.5",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "fileUris": "[variables('commandsUris')]",
