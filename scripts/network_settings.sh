@@ -30,7 +30,12 @@ config sync
 
 EOF
 
+
 if [ -n "${LICENSE}" ]; then
-    curl -k "https://localhost:8443/license/get_config/?license_token=${LICENSE}" || exit 0
+    curl -k "https://localhost:8443/license/get_config/?license_token=${LICENSE}" || echo
 fi
 
+sed -i "s/^    ('en', 'English')/    ('en', 'English'),\n    ('ru', 'Russian'),/g" \
+    /opt/waf/conf/static.ui.config
+
+monit restart ui
