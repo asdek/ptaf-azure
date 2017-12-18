@@ -38,4 +38,6 @@ fi
 sed -i "s/^    ('en', 'English')/    ('en', 'English'),\n    ('ru', 'Russian'),/g" \
     /opt/waf/conf/static.ui.config
 
+cp /opt/waf/static/licenses/PTAF_EULA-en.pdf /opt/waf/static/licenses/PTAF_EULA-ru.pdf
+
 monit restart ui
