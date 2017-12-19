@@ -182,7 +182,7 @@
   "variables": {
     "imagePublisher": "ptsecurity",
     "imageSku" : "byol",
-    "imageOffer" : "ptaf-vm-preview",
+    "imageOffer" : "ptaf-vm",
     "imageVersion": "3.6.6",
     "publicIPAddressType": "Static",
     "wanNetworkInterfaceName": "ptaf-ni-wan",
