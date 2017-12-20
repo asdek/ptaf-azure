@@ -1,4 +1,5 @@
 {
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json",
   "handler": "Microsoft.Compute.MultiVm",
   "version": "0.1.2-preview",
   "parameters": {
@@ -120,11 +121,11 @@
             "type": "Microsoft.Network.PublicIpAddressCombo",
             "label": {
                 "publicIpAddress": "Public IP address",
-                "domainNameLabel": "DNS Name"
+                "domainNameLabel": "DNS Name prefix"
             },
             "constraints": {
               "required": {
-                 "domainNameLabel": true
+                  "domainNameLabel": true
                }
             },
             "toolTip": {
@@ -147,7 +148,7 @@
         "constraints": {
             "required": true,
             "regex": "^[a-z0-9\\-_]{8,24}$",
-            "validationMessage": "VM names must be between 8 and 24 characters long, and can contain only numbers, hyphens and underscores"
+            "validationMessage": "VM names must be between 8 and 24 characters long, and can contain only lowercase letters, numbers, hyphens and underscores"
          }
        },
           {
@@ -186,7 +187,9 @@
             "defaultValue": "",
             "toolTip": "PT AF license key. You can left it empty and apply your license later",
             "constraints": {
-              "required": false
+                "required": false,
+                "regex": "^[a-z0-9A-Z]{8}$",
+                "validationMessage": "License key must be 8 characters long, and can contain only alphanumeric characters"
             },
             "visible": true
           }

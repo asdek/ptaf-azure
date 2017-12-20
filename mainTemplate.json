@@ -189,7 +189,6 @@
     "lanNetworkInterfaceName": "ptaf-ni-lan",
     "networkSecurityGroupName": "ptaf-nsg",
     "deploymentName": "ptaf-deploy",
-    "dnsPrefix": "[concat(parameters('dnsLabelPrefix'), uniquestring(resourceGroup().id, deployment().name))]",
     "singleQuote": "'",
     "extensionCommand": "[concat('sh -c ', variables('singleQuote'), './network_settings.sh ', parameters('virtualMachineName'), ' ', parameters('license'), variables('singleQuote'))]",
     "commandsUris": ["[concat(parameters('baseUrl'), '/scripts/network_settings.sh')]"],
@@ -315,7 +314,7 @@
             "properties": {
                 "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
                 "dnsSettings": {
-                    "domainNameLabel": "[variables('dnsPrefix')]"
+                    "domainNameLabel": "[parameters('dnsLabelPrefix')]"
                  }
             }
         },
