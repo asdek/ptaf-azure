@@ -111,46 +111,22 @@
         "name": "PtafConfig",
         "label": "PT Application Firewall Configuration",
         "subLabel": {
-          "preValidation": "VM's size, name and DNS name ",
+          "preValidation": "VM's size, name and PT AF license",
           "postValidation": "Done"
         },
         "bladeTitle": "PTAF vm Configuration",
         "elements": [
-         {
-            "name": "dnsNameForPublicIP",
-            "type": "Microsoft.Network.PublicIpAddressCombo",
-            "label": {
-                "publicIpAddress": "Public IP address",
-                "domainNameLabel": "DNS Name prefix"
-            },
+          {
+            "name": "virtualMachineName",
+            "type": "Microsoft.Common.TextBox",
+            "label": "PT Application Firewall virtual machine name",
+            "toolTip": "VM name and hostname in resource group after deployment",
             "constraints": {
-              "required": {
-                  "domainNameLabel": true
-               }
-            },
-            "toolTip": {
-                "domainNameLabel": "Unique DNS name prefix for public IP of WAN interface (eth0)"
-            },
-            "defaultValue": {
-                "publicIpAddressName": "ptaf-ip",
-                "domainNameLabel": ""
-            },
-            "options": {
-                "hideNone": true,
-                "hideExisting" : true
+              "required": true,
+              "regex": "^[a-z0-9\\-_]{8,24}$",
+              "validationMessage": "VM names must be between 8 and 24 characters long, and can contain only lowercase letters, numbers, hyphens and underscores"
             }
           },
-       {
-        "name": "virtualMachineName",
-        "type": "Microsoft.Common.TextBox",
-        "label": "PT Application Firewall virtual machine name",
-        "toolTip": "VM name and hostname in resource group after deployment",
-        "constraints": {
-            "required": true,
-            "regex": "^[a-z0-9\\-_]{8,24}$",
-            "validationMessage": "VM names must be between 8 and 24 characters long, and can contain only lowercase letters, numbers, hyphens and underscores"
-         }
-       },
           {
             "name": "virtualMachineSize",
             "type": "Microsoft.Compute.SizeSelector",
@@ -201,8 +177,6 @@
       "storageAccountType": "[steps('envconfig').newStorageAccount.type]",
       "newOrExistingStorageAccount" : "[steps('envconfig').newStorageAccount.newOrExisting]",
       "storageAccountExistingRG": "[steps('envconfig').newStorageAccount.resourceGroup]",
-      "publicIPAddressName": "[steps('PtafConfig').dnsNameForPublicIP.publicIPAddressName]",
-      "dnsLabelPrefix": "[steps('PtafConfig').dnsNameForPublicIP.domainNameLabel]",
       "virtualMachineName": "[steps('PtafConfig').virtualMachineName]",
       "adminUsername": "[basics('adminUsername')]",
       "adminPassword": "[basics('SSHCredentials').password]",
