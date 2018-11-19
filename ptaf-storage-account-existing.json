@@ -2,6 +2,9 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "location": {
+            "type": "string"
+        },
         "storageAccountName": {
             "metadata": {
                 "Description": "The name of the existing storage account created to store the VMs disks"
@@ -21,7 +24,7 @@
         "storageAccountExistingRG" : {
             "type" : "string",
             "defaultValue" : ""
-}
+        }
     },
     "resources": [],
     "outputs": {
@@ -29,5 +32,5 @@
             "type": "string",
             "value": "[resourceId(parameters('storageAccountExistingRG'), 'Microsoft.Storage/StorageAccounts',parameters('storageAccountName'))]"
         }
-    },
+    }
 }

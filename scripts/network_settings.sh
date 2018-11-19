@@ -1,31 +1,43 @@
 #!/bin/bash
 
+HOSTNAME=$1
+LICENSE=$2
+
 #delete azcesd if exists
-SEARCH=$(apt-cache search azure-security)
-if [ -n "$SEARCH" ]; then
+if [ -n "$(apt-cache search azure-security)" ]; then
     apt-get purge -y azure-security
 fi
 
-HOSTNAME=$1
 
-/usr/local/bin/wsc <<EOF
-output automation
+WSC_MGMT_INTERFACE=eth0 WSC_WAN_INTERFACE=eth0 WSC_LAN_INTERFACE=eth1 \
+/usr/local/bin/wsc -e <<EOF
 
-if alias lo 0
-if set lo:0 inet_address 192.168.40.40
-if set lo:0 inet_netmask 255.255.255.255
-
-host add 192.168.40.40 $HOSTNAME
+host add 127.0.1.1 $HOSTNAME
 hostname $HOSTNAME
 
 if mode eth0 dhcp
 if mode eth1 dhcp
 
-if mark lo:0
 if mark eth0
 if mark eth1
+if mark lo:0
+
+feature set azure_byol true
+integration_mode reverse_proxy
 
 config commit
 config sync
 
 EOF
+
+
+if [ -n "${LICENSE}" ]; then
+    curl -k "https://localhost:8443/license/get_config/?license_token=${LICENSE}" || echo
+fi
+
+sed -i "s/^    ('en', 'English')/    ('en', 'English'),\n    ('ru', 'Russian'),/g" \
+    /opt/waf/conf/static.ui.config
+
+cp /opt/waf/static/licenses/PTAF_EULA-en.pdf /opt/waf/static/licenses/PTAF_EULA-ru.pdf
+
+monit restart ui

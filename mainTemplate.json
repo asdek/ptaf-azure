@@ -2,6 +2,12 @@
   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+      "location": {
+          "type": "string",
+          "metadata": {
+            "description": "The region to deploy PT Application Firewall"
+          }
+      },
       "virtualMachineName": {
           "type": "string",
           "defaultValue": "ptaf-vm",
@@ -14,17 +20,7 @@
           "defaultValue": "Standard_A4",
           "metadata": {
               "description": "Size of the ptaf vm azure instance"
-          },
-          "allowedValues": [
-              "Standard_F4",
-              "Standard_F8",
-              "Standard_F16",
-              "Standard_A4",
-              "Standard_A6",
-              "Standard_A7",
-              "Standard_D3_v2",
-              "Standard_D4_v2"
-          ]
+          }
         },
       "adminUsername": {
           "type": "string",
@@ -68,37 +64,76 @@
           "description": "Storage Account's Resource Group"
           }
       },
-      "dnsLabelPrefix": {
+      "newOrExistingVirtualNetwork": {
           "type": "string",
-          "defaultValue": "ptaf-yourdnsname",
+          "allowedValues": [
+            "new",
+            "existing"
+        ],
+        "defaultValue": "new",
           "metadata": {
-            "description": "DNS for public ip adress"
+            "description": "Use new to create new virtualNetwork and existing to reuse an existing one"
           }
-        },
-      "publicIPAddressName": {
-          "defaultValue": "ptaf-ip",
-          "type": "string",
-          "metadata": {
-            "description": "name of public ip adress"
+      },
+      "virtualNetworkExistingRG": {
+        "type": "string",
+        "defaultValue": "",
+        "metadata": {
+          "description": "virtualNetwork Account's Resource Group"
           }
-        },
+      },
       "vnetName": {
-          "defaultValue": "ptaf-vnet",
           "type": "string",
+          "defaultValue": "ptaf-vnet",
           "metadata": {
-            "description": "ptaf virtual network name"
+            "description": "virtual network name"
           }
-        },
+      },
+      "vnetMask": {
+          "type": "string",
+          "defaultValue": "10.0.0.0/16",
+          "metadata": {
+            "description": "virtual network mask"
+          }
+      },
+      "wanAddressPrefix": {
+          "type": "string",
+          "defaultValue": "10.0.0.0/24",
+          "metadata": {
+            "description": "wan subnet mask"
+          }
+      },
+      "lanAddressPrefix": {
+          "type": "string",
+          "defaultValue": "10.0.1.0/24",
+          "metadata": {
+            "description": "lan subnet mask"
+          }
+      },
+      "lanName": {
+          "type": "string",
+          "defaultValue": "LAN",
+          "metadata": {
+            "description": "lan subnet name"
+          }
+      },
+      "wanName": {
+          "type": "string",
+          "defaultValue": "WAN",
+          "metadata": {
+            "description": "wan subnet mask"
+          }
+      },
       "authenticationType": {
-            "type": "string",
-            "allowedValues": [
-                "sshpublickey",
-                "password"
-            ],
-            "defaultValue": "password",
-            "metadata": {
-                "description": "authentication type (key or password)"
-            }
+          "type": "string",
+          "allowedValues": [
+              "sshPublicKey",
+              "password"
+          ],
+          "defaultValue": "password",
+          "metadata": {
+              "description": "authentication type (key or password)"
+          }
         },
         "sshKey": {
             "type": "string",
@@ -109,38 +144,52 @@
       },
       "adminPassword": {
           "type": "securestring",
-          "defaultValue": "P@ssw0rdP@ssw0rd",
+          "defaultValue": "",
           "metadata": {
               "description": "Password for admin username"
           }
-        }
+      },
+      "license": {
+        "type": "securestring",
+        "defaultValue": "",
+        "metadata": {
+            "description": "PT AF license key. You can left it empty and apply your license later"
+          }
+      },
+      "baseUrl": {
+        "type": "string",
+        "metadata": {
+          "description": "The base url for dependent assets",
+          "artifactsBaseUrl": ""
+        },
+        "defaultValue": "https://raw.githubusercontent.com/capgelka/ptaf-azure/release-3.6.3"
+      }
     },
   "variables": {
-     "addressPrefix": "10.0.0.0/16",
-     "subnetName1": "default1",
-     "subnetPrefix1": "10.0.0.0/24",
-     "subnetPrefix2": "10.0.1.0/24",
-     "subnetName2": "default2",
-     "imagePublisher": "ptsecurity",
-     "imageSku" : "byol",
-     "imageOffer" : "ptaf-vm-preview",
-     "networkInterfaceName": "ptaf-ni-wan",
-     "secondNetworkInterfaceName": "ptaf-ni-lan",
-     "networkSecurityGroupName": "ptaf-nsg",
-     "deploymentName": "ptaf-deploy",
-     "singleQuote": "'",
-     "extensionCommand": "[concat('sh -c ', variables('singleQuote'), './network_settings.sh ', parameters('virtualMachineName'), variables('singleQuote'))]",
-     "githubRoot": "https://raw.githubusercontent.com/capgelka/ptaf-azure/master/",
-     "commandsUris": ["[concat(variables('githubRoot'), '/scripts/network_settings.sh')]"],
-     "storageAccountTemplateUrl": "[concat(variables('githubRoot'), '/ptaf-storage-account-', parameters('newOrExistingStorageAccount'),'.json')]",
-     "vmTemplateUrl": "[concat(variables('githubRoot'), '/ptaf-vm-', parameters('authenticationType'),'.json')]"
+    "imagePublisher": "ptsecurity",
+    "imageSku" : "byol",
+    "imageOffer" : "ptaf-vm",
+    "imageVersion": "3.6.6",
+    "publicIPAddressType": "Static",
+    "wanNetworkInterfaceName": "ptaf-ni-wan",
+    "lanNetworkInterfaceName": "ptaf-ni-lan",
+    "networkSecurityGroupName": "ptaf-nsg",
+    "deploymentName": "ptaf-deploy",
+    "publicIPAddressName": "ptaf-ip",
+    "dnsPrefix": "[concat('ptaf-', uniquestring(resourceGroup().id, deployment().name))]",
+    "singleQuote": "'",
+    "extensionCommand": "[concat('sh -c ', variables('singleQuote'), './network_settings.sh ', parameters('virtualMachineName'), ' ', parameters('license'), variables('singleQuote'))]",
+    "commandsUris": ["[concat(parameters('baseUrl'), '/scripts/network_settings.sh')]"],
+    "storageAccountTemplateUrl": "[concat(parameters('baseUrl'), '/ptaf-storage-account-', parameters('newOrExistingStorageAccount'),'.json')]",
+    "virtualNetworkTemplateUrl": "[concat(parameters('baseUrl'), '/ptaf-network-', parameters('newOrExistingVirtualNetwork'), '.json')]",
+    "vmTemplateUrl": "[concat(parameters('baseUrl'), '/ptaf-vm-', parameters('authenticationType'),'.json')]"
   },
   "resources": [
     {
         "apiVersion": "2015-06-15",
         "type": "Microsoft.Network/networkSecurityGroups",
         "name": "[variables('networkSecurityGroupName')]",
-        "location": "[resourceGroup().location]",
+        "location": "[parameters('location')]",
         "tags": {
           "displayName": "Network Security Group"
         },
@@ -209,7 +258,7 @@
                 "protocol": "Tcp",
                 "sourcePortRange": "*",
                 "destinationPortRange": "8082",
-                "sourceAddressPrefix": "[variables('addressPrefix')]",
+                "sourceAddressPrefix": "[parameters('vnetMask')]",
                 "destinationAddressPrefix": "*",
                 "access": "Allow",
                 "priority": 105,
@@ -238,81 +287,92 @@
                 },
                 "storageAccountExistingRG": {
                   "value": "[parameters('storageAccountExistingRG')]"
+                },
+                "location": {
+                    "value": "[parameters('location')]"
                 }
               }
             }
        },
        {
             "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[parameters('publicIPAddressName')]",
-            "apiVersion": "2016-03-30",
-            "location": "[resourceGroup().location]",
+            "name": "[variables('publicIPAddressName')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('location')]",
             "properties": {
-                "publicIPAllocationMethod": "Static",
+                "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
                 "dnsSettings": {
-                    "domainNameLabel": "[parameters('dnsLabelPrefix')]"
+                    "domainNameLabel": "[variables('dnsPrefix')]"
                  }
             }
         },
         {
-            "type": "Microsoft.Network/virtualNetworks",
-            "name": "[parameters('vnetName')]",
-            "apiVersion": "2016-03-30",
-            "location": "[resourceGroup().location]",
+            "name": "virtualNetworkSetup",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-11-01",
             "dependsOn": [
-                "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
             ],
             "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[variables('addressPrefix')]"
-                    ]
-                },
-                "dhcpOptions": {
-                    "dnsServers": []
-                },
-                "subnets": [
-                    {
-                        "name": "[variables('subnetName1')]",
-                        "properties": {
-                            "addressPrefix": "[variables('subnetPrefix1')]",
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
-                            }
-                        }
-                    },
-                    {
-                        "name": "[variables('subnetName2')]",
-                        "properties": {
-                            "addressPrefix": "[variables('subnetPrefix2')]",
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
-                            }
-                        }
-                    }
-                ]
+              "templateLink": {
+                "uri": "[variables('virtualNetworkTemplateUrl')]",
+                "contentVersion": "1.0.0.0"
+              },
+              "mode": "Incremental",
+              "parameters": {
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "virtualNetworkExistingRG": {
+                     "value": "[parameters('virtualNetworkExistingRG')]"
+                  },
+                  "networkSecurityGroupName": {
+                     "value": "[variables('networkSecurityGroupName')]"
+                  },
+                  "vnetName": {
+                      "value": "[parameters('vnetName')]"
+                  },
+                  "vnetMask": {
+                      "value": "[parameters('vnetMask')]"
+                  },
+                  "wanAddressPrefix": {
+                      "value": "[parameters('wanAddressPrefix')]"
+                  },
+                  "lanAddressPrefix": {
+                     "value": "[parameters('lanAddressPrefix')]"
+                  },
+                  "lanName": {
+                      "value": "[parameters('lanName')]"
+                  },
+                  "wanName": {
+                      "value": "[parameters('wanName')]"
+                  }
+              }
             }
         },
-        {
+      {
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "[variables('networkInterfaceName')]",
-            "apiVersion": "2016-03-30",
-            "location": "[resourceGroup().location]",
+            "name": "[variables('wanNetworkInterfaceName')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddressName'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]",
+                "virtualNetworkSetup"
             ],
             "properties": {
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+                },
                 "ipConfigurations": [
                     {
-                        "name": "IPConfig1",
+                        "name": "wanIpConfig",
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddressName'))]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
                             },
                             "subnet": {
-                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '/subnets/', variables('subnetName1'))]"
+                                "id": "[concat(reference('virtualNetworkSetup').outputs.virtualNetworkId.value, '/subnets/', parameters('wanName'))]"
                             }
                         }
                     }
@@ -321,20 +381,23 @@
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "[variables('secondNetworkInterfaceName')]",
-            "apiVersion": "2016-03-30",
-            "location": "[resourceGroup().location]",
+            "name": "[variables('lanNetworkInterfaceName')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+                "virtualNetworkSetup"
             ],
             "properties": {
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+                 },
                 "ipConfigurations": [
                     {
-                        "name": "IPConfig2",
+                        "name": "lanApiConfig",
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "subnet": {
-                                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), '/subnets/', variables('subnetName2'))]"
+                                "id": "[concat(reference('virtualNetworkSetup').outputs.virtualNetworkId.value, '/subnets/', parameters('lanName'))]"
                             }
                         }
                     }
@@ -348,8 +411,8 @@
 
             "dependsOn": [
                "storageAcountSetup",
-               "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]",
-               "[resourceId('Microsoft.Network/networkInterfaces', variables('secondNetworkInterfaceName'))]"
+               "[resourceId('Microsoft.Network/networkInterfaces', variables('wanNetworkInterfaceName'))]",
+               "[resourceId('Microsoft.Network/networkInterfaces', variables('lanNetworkInterfaceName'))]"
             ],
             "properties": {
               "mode": "Incremental",
@@ -358,6 +421,9 @@
                 "contentVersion": "1.0.0.0"
               },
               "parameters": {
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
                   "storageAccountName": {
                       "value": "[parameters('storageAccountName')]"
                   },
@@ -373,11 +439,14 @@
                   "imagePublisher": {
                     "value": "[variables('imagePublisher')]"
                   },
-                  "networkInterfaceName": {
-                    "value": "[variables('networkInterfaceName')]"
+                  "imageVersion": {
+                    "value": "[variables('imageVersion')]"
                   },
-                  "secondNetworkInterfaceName": {
-                    "value": "[variables('secondNetworkInterfaceName')]"
+                  "wanNetworkInterfaceName": {
+                    "value": "[variables('wanNetworkInterfaceName')]"
+                  },
+                  "lanNetworkInterfaceName": {
+                    "value": "[variables('lanNetworkInterfaceName')]"
                   },
                   "virtualMachineSize": {
                     "value": "[parameters('virtualMachineSize')]"
@@ -398,7 +467,7 @@
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('virtualMachineName'),'/ptafConfig')]",
             "apiVersion": "2015-06-15",
-            "location": "[resourceGroup().location]",
+            "location": "[parameters('location')]",
             "dependsOn": [
                 "[concat('Microsoft.Resources/deployments/', variables('deploymentName'))]"
             ],
