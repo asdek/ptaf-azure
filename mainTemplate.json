@@ -162,14 +162,14 @@
           "description": "The base url for dependent assets",
           "artifactsBaseUrl": ""
         },
-        "defaultValue": "https://raw.githubusercontent.com/capgelka/ptaf-azure/release-3.6.3"
+        "defaultValue": "https://github.com/asdek/ptaf-azure/releases/tag/v3.7.0"
       }
     },
   "variables": {
     "imagePublisher": "ptsecurity",
     "imageSku" : "byol",
     "imageOffer" : "ptaf-vm",
-    "imageVersion": "3.6.6",
+    "imageVersion": "3.7.0",
     "publicIPAddressType": "Static",
     "wanNetworkInterfaceName": "ptaf-ni-wan",
     "lanNetworkInterfaceName": "ptaf-ni-lan",
@@ -403,6 +403,19 @@
                     }
                 ]
           }
+        },
+        {
+            "apiVersion": "2018-02-01",
+            "name": "pid-f78b5bcf-947a-5ec4-88e7-c65e3b8d65cf",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
         },
         {
             "name": "[variables('deploymentName')]",
