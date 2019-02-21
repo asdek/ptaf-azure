@@ -405,6 +405,19 @@
           }
         },
         {
+            "apiVersion": "2018-02-01",
+            "name": "pid-f78b5bcf-947a-5ec4-88e7-c65e3b8d65cf",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": []
+                }
+            }
+        },
+        {
             "name": "[variables('deploymentName')]",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
