@@ -34,15 +34,21 @@ while netstat -lnt | awk '$4 ~ /:2812$/ {exit 1}';
     do sleep 10;
 done
 
-if [ -n "${LICENSE}" ]; then
-    STATUS=$(curl -ks -o /dev/null -w '%{http_code}' "https://localhost:8443/license/get_config/?license_token=${LICENSE}" )
-    if [ $STATUS -eq 200 ]; then
-        echo "License was updated via Curl"
-        break
-    fi
-fi
+# One shot Activation
+########################################################################
+echo "USE_RSA_LOGIN = False" >> /opt/waf/conf/ui.config
 
+/opt/waf/python/bin/python - <<EOF > /dev/null 2>&1
+from hashlib import md5
+from ui import app
 
+with app.test_request_context():
+    client = app.test_client()
+    client.post('/login', data={'login': 'admin','password': '82082716189f80fd070b89ac716570ba','lang': 'en'})
+    client.get("/license/get_config/?license_token=$LICENSE")
+EOF
+
+sed -i '$ d' /opt/waf/conf/ui.config
 sed -i "s/^    ('en', 'English')/    ('en', 'English'),\n    ('ru', 'Russian'),/g" \
     /opt/waf/conf/static.ui.config
 
